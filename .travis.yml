@@ -1,0 +1,30 @@
+dist: trusty
+sudo: false
+language: node_js
+
+node_js:
+  - "node"
+  - "8"
+  - "7"
+
+notifications:
+  email:
+    on_failure: always
+
+branches:
+  only:
+    - master
+
+services:
+  - mysql
+
+before_install:
+  - mysql -e 'CREATE DATABASE fixtures_test;'
+  - mysql -e 'CREATE TABLE fixtures_test.roles (id INT AUTO_INCREMENT, name VARCHAR(100) NULL, PRIMARY KEY(id));'
+  - mysql -e 'CREATE TABLE fixtures_test.users (id INT AUTO_INCREMENT, email VARCHAR(150) NOT NULL, role_id INT NOT NULL, PRIMARY KEY(id), FOREIGN KEY (role_id) REFERENCES fixtures_test.roles(id));'
+
+install:
+  - npm install
+
+script:
+  - npm test -- test/**/*.test.js
