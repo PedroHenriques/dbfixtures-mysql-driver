@@ -2,7 +2,9 @@
 import { Connection } from 'mysql';
 import { queryFn } from './dbPromises';
 
-export function truncate(connection: Connection): (tableNames: string[]) => Promise<void> {
+export function truncate(
+  connection: Connection
+): (tableNames: string[]) => Promise<void> {
   return(async (tableNames: string[]): Promise<void> => {
     const query = queryFn(connection);
 

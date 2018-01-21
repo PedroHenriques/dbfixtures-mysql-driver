@@ -9,7 +9,9 @@ import { close } from './close';
 /**
  * Creates an instance of this Driver.
  */
-export async function create(connectionOptions: string | ConnectionConfig): Promise<IDriver> {
+export async function create(
+  connectionOptions: string | ConnectionConfig
+): Promise<IDriver> {
   const connection = createConnection(connectionOptions);
   await connect(connection);
   return(Promise.resolve({

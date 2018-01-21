@@ -36,7 +36,7 @@ export function queryFn(
       connection.query(options, values, (error) => {
         if (error !== null && error !== undefined) { reject(error.stack); }
         resolve();
-      })
+      });
     }));
   });
 }
