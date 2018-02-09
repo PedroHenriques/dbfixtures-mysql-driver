@@ -1,8 +1,12 @@
 {
   "name": "dbfixtures-mysql-driver",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A MySQL driver for the NPM dbfixtures package.",
-  "keywords": ["db fixtures", "test fixtures", "fixtures"],
+  "keywords": [
+    "db fixtures",
+    "test fixtures",
+    "fixtures"
+  ],
   "homepage": "https://github.com/PedroHenriques/dbfixtures-mysql-driver",
   "bugs": "https://github.com/PedroHenriques/dbfixtures-mysql-driver/issues",
   "author": "Pedro Henriques <pedro@pedrojhenriques.com> (http://pedrojhenriques.com)",
@@ -34,14 +38,14 @@
   },
   "devDependencies": {
     "@types/mysql": "^2.15.2",
-    "@types/node": "^9.3.0",
+    "@types/node": "^4.0.36",
     "chai": "^4.1.2",
-    "mocha": "^4.1.0",
+    "mocha": "^5.0.0",
     "proxyquire": "^1.8.0",
-    "sinon": "^4.1.6",
+    "sinon": "^4.2.2",
     "ts-node": "^4.1.0",
     "tslint": "^5.9.1",
     "tslint-eslint-rules": "^4.1.1",
-    "typescript": "^2.6.2"
+    "typescript": "^2.7.1"
   }
 }
