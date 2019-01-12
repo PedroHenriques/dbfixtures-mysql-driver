@@ -1,7 +1,9 @@
 'use strict';
-const proxyquire = require('proxyquire');
-const assert = require('chai').assert;
+const chai = require('chai');
+const assert = chai.assert;
 const sinon = require('sinon');
+const proxyquire = require('proxyquire');
+
 const mysql = require('mysql');
 const dbPromises = require('../../lib/dbPromises.js');
 const truncate = require('../../lib/truncate.js');
@@ -14,13 +16,13 @@ describe('create', function () {
   let proxyCreate;
 
   beforeEach(function () {
-    doubles = {};
-    doubles.mysqlStub = sandbox.stub(mysql);
-    doubles.connectionStub = {};
-    doubles.dbPromisesStub = sandbox.stub(dbPromises);
-    doubles.truncateStub = sandbox.stub(truncate);
-    doubles.insertFixturesStub = sandbox.stub(insertFixtures);
-    doubles.closeStub = sandbox.stub(close);
+    doubles = {
+      mysqlStub: sandbox.stub(mysql),
+      dbPromisesStub: sandbox.stub(dbPromises),
+      truncateStub: sandbox.stub(truncate),
+      insertFixturesStub: sandbox.stub(insertFixtures),
+      closeStub: sandbox.stub(close),
+    };
     proxyCreate = proxyquire('../../lib/create.js', {
       'mysql': doubles.mysqlStub,
       './dbPromises': doubles.dbPromisesStub,
@@ -34,69 +36,218 @@ describe('create', function () {
     sandbox.restore();
   });
 
-  describe('create()', function () {
-    it('should create a connection to the MySql server and return a Promise that resolves to an object with truncate(), insertFixtures() and close()', function () {
-      doubles.mysqlStub.createConnection.returns(doubles.connectionStub);
+  describe('default export', function () {
+    beforeEach(function () {
       doubles.dbPromisesStub.connect.returns(Promise.resolve());
-      doubles.truncateStub.truncate.withArgs(doubles.connectionStub).returns('truncate ready function.');
-      doubles.insertFixturesStub.insertFixtures.withArgs(doubles.connectionStub).returns('insertFixtures ready function.');
-      doubles.closeStub.close.withArgs(doubles.connectionStub).returns('close ready function.');
+    });
 
-      const options = {
-        host: 'localhost',
-        user: 'root',
-        password: 'password',
-        database: 'db_name',
-      };
-      const create = proxyCreate.create(options);
+    it('should be a function', function () {
+      assert.typeOf(proxyCreate.default, 'function');
+    });
 
-      assert.typeOf(create, 'Promise');
+    it('should call the createConnection() function, of the "mysql" module, once', function () {
       return(
-        create.then((returnValue) => {
-          assert.deepEqual(returnValue, {
-            truncate: 'truncate ready function.',
-            insertFixtures: 'insertFixtures ready function.',
-            close: 'close ready function.',
-          });
+        proxyCreate.default()
+        .then(function () {
           assert.isTrue(doubles.mysqlStub.createConnection.calledOnce);
-          assert.deepEqual(doubles.mysqlStub.createConnection.args[0], [options]);
+        })
+      );
+    });
+    
+    it('should call the createConnection() function, of the "mysql" module, with 1 argument', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.mysqlStub.createConnection.args[0].length, 1);
+        })
+      );
+    });
+    
+    it('should call the createConnection() function, of the "mysql" module, with the argument provided to this function', function () {
+      const connectionConfig = {};
+      return(
+        proxyCreate.default(connectionConfig)
+        .then(function () {
+          assert.strictEqual(doubles.mysqlStub.createConnection.args[0][0], connectionConfig);
+        })
+      );
+    });
+    
+    it('should call the connect() function, of the "dbPromises" module, once', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
           assert.isTrue(doubles.dbPromisesStub.connect.calledOnce);
-          assert.deepEqual(doubles.dbPromisesStub.connect.args[0], [doubles.connectionStub]);
-          assert.isTrue(doubles.truncateStub.truncate.calledOnce);
-          assert.isTrue(doubles.insertFixturesStub.insertFixtures.calledOnce);
-          assert.isTrue(doubles.closeStub.close.calledOnce);
-        }, () => {
-          assert.fail();
+        })
+      );
+    });
+    
+    it('should call the connect() function, of the "dbPromises" module, with 1 argument', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.dbPromisesStub.connect.args[0].length, 1);
+        })
+      );
+    });
+    
+    it('should call the connect() function, of the "dbPromises" module, with the return value from the call to "mysql" module\'s createConnection()', function () {
+      const connectionObj = {};
+      doubles.mysqlStub.createConnection.returns(connectionObj);
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.dbPromisesStub.connect.args[0][0], connectionObj);
         })
       );
     });
 
-    describe('if the connection to the DB fails to be established', function () {
-      it('should return a Promise that rejects with the Error thrown by the failed connection attempt', function () {
-        doubles.mysqlStub.createConnection.returns(doubles.connectionStub);
-        doubles.dbPromisesStub.connect.returns(Promise.reject('dbPromises.connect() error msg.'));
-        
-        const options = {
-          host: 'localhost',
-          user: 'root',
-          password: 'password',
-          database: 'db_name',
-        };
-        const create = proxyCreate.create(options);
-  
-        assert.typeOf(create, 'Promise');
+    it('should call the default export of the "truncate" module once', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.isTrue(doubles.truncateStub.default.calledOnce);
+        })
+      );
+    });
+
+    it('should call the default export of the "truncate" module with 1 argument', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.truncateStub.default.args[0].length, 1);
+        })
+      );
+    });
+
+    it('should call the default export of the "truncate" module with the return value from the call to "mysql" module\'s createConnection()', function () {
+      const connectionObj = {};
+      doubles.mysqlStub.createConnection.returns(connectionObj);
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.truncateStub.default.args[0][0], connectionObj);
+        })
+      );
+    });
+
+    it('should call the default export of the "insertFixtures" module once', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.isTrue(doubles.insertFixturesStub.default.calledOnce);
+        })
+      );
+    });
+
+    it('should call the default export of the "insertFixtures" module with 1 argument', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.insertFixturesStub.default.args[0].length, 1);
+        })
+      );
+    });
+
+    it('should call the default export of the "insertFixtures" module with the return value from the call to "mysql" module\'s createConnection()', function () {
+      const connectionObj = {};
+      doubles.mysqlStub.createConnection.returns(connectionObj);
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.insertFixturesStub.default.args[0][0], connectionObj);
+        })
+      );
+    });
+
+    it('should call the default export of the "close" module once', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.isTrue(doubles.closeStub.default.calledOnce);
+        })
+      );
+    });
+
+    it('should call the default export of the "close" module with 1 argument', function () {
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.closeStub.default.args[0].length, 1);
+        })
+      );
+    });
+
+    it('should call the default export of the "close" module with the return value from the call to "mysql" module\'s createConnection()', function () {
+      const connectionObj = {};
+      doubles.mysqlStub.createConnection.returns(connectionObj);
+      return(
+        proxyCreate.default()
+        .then(function () {
+          assert.strictEqual(doubles.closeStub.default.args[0][0], connectionObj);
+        })
+      );
+    });
+    
+    it('should return an object with the IDriver properties', function () {
+      return(
+        proxyCreate.default()
+        .then(function (result) {
+          assert.deepEqual(Object.getOwnPropertyNames(result), [ 'truncate', 'insertFixtures', 'close' ]);
+        })
+      );
+    });
+
+    describe('returned object\'s "truncate" property', function () {
+      it('should have the returned value from the call to the default export of the "truncate" module', function () {
+        const truncateObj = {};
+        doubles.truncateStub.default.returns(truncateObj);
         return(
-          create.then(() => {
+          proxyCreate.default()
+          .then(function (result) {
+            assert.strictEqual(result.truncate, truncateObj);
+          })
+        );
+      });
+    });
+
+    describe('returned object\'s "insertFixtures" property', function () {
+      it('should have the returned value from the call to the default export of the "insertFixtures" module', function () {
+        const insertFixturesObj = {};
+        doubles.insertFixturesStub.default.returns(insertFixturesObj);
+        return(
+          proxyCreate.default()
+          .then(function (result) {
+            assert.strictEqual(result.insertFixtures, insertFixturesObj);
+          })
+        );
+      });
+    });
+
+    describe('returned object\'s "close" property', function () {
+      it('should have the returned value from the call to the default export of the "close" module', function () {
+        const closeObj = {};
+        doubles.closeStub.default.returns(closeObj);
+        return(
+          proxyCreate.default()
+          .then(function (result) {
+            assert.strictEqual(result.close, closeObj);
+          })
+        );
+      });
+    });
+
+    describe('if the call to connect() of the "dbPromises" module returns a promise that rejects', function () {
+      it('should return a promise that rejects with that Error object', function () {
+        const testError = new Error('connect() test error message');
+        doubles.dbPromisesStub.connect.returns(Promise.reject(testError));
+        return(
+          proxyCreate.default()
+          .then(function () {
             assert.fail();
-          }, (reason) => {
-            assert.strictEqual(reason, 'dbPromises.connect() error msg.');
-            assert.isTrue(doubles.mysqlStub.createConnection.calledOnce);
-            assert.deepEqual(doubles.mysqlStub.createConnection.args[0], [options]);
-            assert.isTrue(doubles.dbPromisesStub.connect.calledOnce);
-            assert.deepEqual(doubles.dbPromisesStub.connect.args[0], [doubles.connectionStub]);
-            assert.isTrue(doubles.truncateStub.truncate.notCalled);
-            assert.isTrue(doubles.insertFixturesStub.insertFixtures.notCalled);
-            assert.isTrue(doubles.closeStub.close.notCalled);
+          })
+          .catch(function (error) {
+            assert.strictEqual(error, testError);
           })
         );
       });

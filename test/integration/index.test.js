@@ -1,7 +1,9 @@
 'use strict';
-const assert = require('chai').assert;
+const chai = require('chai');
+const assert = chai.assert;
+
 const mysql = require('mysql');
-const index = require('../../lib/index.js');
+const index = require('../../lib/index');
 
 const connectionOptions = {
   host: 'localhost',
@@ -11,7 +13,7 @@ const connectionOptions = {
   database: 'fixtures_test',
 };
 
-describe('index.create()', function () {
+describe('create()', function () {
   let connection;
   let driver;
   const initialQueries = [
@@ -27,7 +29,7 @@ describe('index.create()', function () {
     connection = mysql.createConnection(connectionOptions);
     await new Promise((resolve, reject) => {
       connection.connect((error) => {
-        if (error) { reject(error.stack); }
+        if (error) { reject(error); }
         resolve();
       });
     });
@@ -36,7 +38,7 @@ describe('index.create()', function () {
   after(async function () {
     await new Promise((resolve, reject) => {
       connection.end((error) => {
-        if (error) { reject(error.stack); }
+        if (error) { reject(error); }
         resolve();
       });
     });
@@ -46,7 +48,7 @@ describe('index.create()', function () {
     for (let i = 0; i < initialQueries.length; i++) {
       await new Promise((resolve, reject) => {
         connection.query(initialQueries[i], (error) => {
-          if (error) { reject(error.stack); }
+          if (error) { reject(error); }
           resolve();
         });
       });
@@ -72,13 +74,13 @@ describe('index.create()', function () {
 
       const rolesNumRows = await new Promise((resolve, reject) => {
         connection.query('SELECT count(id) as count FROM roles', (error, results) => {
-          if (error) { reject(error.stack); }
+          if (error) { reject(error); }
           resolve(results[0].count);
         });
       });
       const usersNumRows = await new Promise((resolve, reject) => {
         connection.query('SELECT count(id) as count FROM users', (error, results) => {
-          if (error) { reject(error.stack); }
+          if (error) { reject(error); }
           resolve(results[0].count);
         });
       });
@@ -88,7 +90,7 @@ describe('index.create()', function () {
   });
 
   describe('driver.insertFixtures()', function () {
-    it('should insert all the provided rows into the provided table', async function () {
+    it('should insert all the provided rows into the selected table', async function () {
       await driver.insertFixtures('users', [
         { email: 'test@test.com', role_id: 1 },
         { email: 'another_test@gmail.com', role_id: 2 },
@@ -97,13 +99,13 @@ describe('index.create()', function () {
 
       const rolesResults = await new Promise((resolve, reject) => {
         connection.query('SELECT * FROM roles', (error, results) => {
-          if (error) { reject(error.stack); }
+          if (error) { reject(error); }
           resolve(results);
         });
       });
       const usersResults = await new Promise((resolve, reject) => {
         connection.query('SELECT * FROM users', (error, results) => {
-          if (error) { reject(error.stack); }
+          if (error) { reject(error); }
           resolve(results);
         });
       });

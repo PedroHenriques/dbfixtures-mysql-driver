@@ -2,10 +2,14 @@ dist: trusty
 sudo: false
 language: node_js
 
-node_js:
-  - "node"
-  - "8"
-  - "7"
+matrix:
+  include:
+    - node_js: "node"
+    - node_js: "10"
+    - node_js: "9"
+      env: NODE_FLAGS=--harmony_promise_finally
+    - node_js: "8"
+      env: NODE_FLAGS=--harmony_promise_finally
 
 notifications:
   email:
@@ -27,4 +31,8 @@ install:
   - npm install
 
 script:
-  - npm test -- test/**/*.test.js
+  - npm run lint
+  - npm run build
+  - npm test -- test/unit/ $NODE_FLAGS
+  - npm test -- test/integration/ $NODE_FLAGS
+  - npm test -- test/e2e/ $NODE_FLAGS

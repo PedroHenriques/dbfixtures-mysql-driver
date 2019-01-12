@@ -2,16 +2,14 @@
 import { Connection } from 'mysql';
 import { queryFn } from './dbPromises';
 
-export function insertFixtures(
+export default function insertFixturesFactory(
   connection: Connection
-): (tableName: string, fixtures: [{}]) => Promise<void> {
-  return(async (tableName: string, fixtures: [{}]): Promise<void> => {
+): (tableName: string, fixtures: {}[]) => Promise<void> {
+  return(async (tableName: string, fixtures: {}[]): Promise<void> => {
     const query = queryFn(connection);
 
-    const queries: Promise<void>[] = [];
     for (let i = 0; i < fixtures.length; i++) {
-      queries.push(query('INSERT INTO ?? SET ?', [tableName, fixtures[i]]));
+      await query('INSERT INTO ?? SET ?', [ tableName, fixtures[i] ]);
     }
-    await Promise.all(queries);
   });
 }

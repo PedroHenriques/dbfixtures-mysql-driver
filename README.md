@@ -8,8 +8,15 @@ This package is ment to be used in conjunction with the [dbfixtures package](htt
 ## Installation
 
 ```sh
-npm install dbfixtures-mysql-driver
+npm install --save-dev dbfixtures-mysql-driver
 ```
+
+## NodeJS versions
+
+- **Package version `>=1.1.*`** supports NodeJS `v8` or higher.  
+  **NOTE:** For versions `8` and `9` the node flag `--harmony_promise_finally` is required
+
+- **Package version `1.0.*`** supports NodeJS `v7` or higher.  
 
 ## Usage
 
@@ -75,13 +82,24 @@ describe('fixtures example', function () {
 ## Testing This Package
 
 * `cd` into the package's directory
-* run `npm install`
-* for unit tests run `npm test -- test\unit\**\*.test.js`
 
-* for integration tests run `npm test -- test\integration\**\*.test.js`
-**NOTE:** requires an active MySQL server and a database to be setup, using the following MySQL commands
-```sh
-CREATE DATABASE fixtures_test;
-CREATE TABLE fixtures_test.roles (id INT AUTO_INCREMENT, name VARCHAR(100) NULL, PRIMARY KEY(id));
-CREATE TABLE fixtures_test.users (id INT AUTO_INCREMENT, email VARCHAR(150) NOT NULL, role_id INT NOT NULL, PRIMARY KEY(id), FOREIGN KEY (role_id) REFERENCES fixtures_test.roles(id));
-```
+* run `npm install`
+
+* for unit tests run `npm test -- test\unit\`
+
+* for integration tests run `npm test -- test\integration\`  
+**NOTE:** requires an active MySQL server available through `localhost:3306` and with the expected setup (see below)
+
+* for end-to-end tests run `npm test -- test\e2e\`  
+**NOTE:** requires an active MySQL server available through `localhost:3306` and with the expected setup (see below)
+
+### Required database setup
+
+The `integration` and `end-to-end` tests the database server needs to have an initial setup that creates the database and tables used in the tests.  
+A shell script is provided in the `test/db_setup/` directory with the commands that need to be executed in the database server to correctly set it up for the tests.
+
+### Suggestion to setting up a MySQL server on your local machine
+
+If you are using `Docker`, you can run the CLI command `docker run --name testmysql -p 127.0.0.1:3306:3306/tcp -e MYSQL_DATABASE=fixtures_test -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -v absolute-path-to-project/test/db_setup/:/docker-entrypoint-initdb.d/ -d mariadb:10` to raise a container with the MariaDB v10.* image and make it available through `localhost:3306`.  
+
+**NOTE:** Replace `absolute-path-to-project` with the absolute path to the root of the repository clone in your machine.

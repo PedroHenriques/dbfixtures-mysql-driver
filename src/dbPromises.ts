@@ -1,5 +1,5 @@
 'use strict';
-import { Connection, QueryOptions } from 'mysql';
+import { Connection } from 'mysql';
 
 /**
  * Establishes a connection to the DB.
@@ -7,7 +7,7 @@ import { Connection, QueryOptions } from 'mysql';
 export function connect(connection: Connection): Promise<void> {
   return(new Promise((resolve, reject) => {
     connection.connect((error) => {
-      if (error !== null && error !== undefined) { reject(error.stack); }
+      if (error !== null && error !== undefined) { return(reject(error)); }
       resolve();
     });
   }));
@@ -19,7 +19,7 @@ export function connect(connection: Connection): Promise<void> {
 export function end(connection: Connection): Promise<void> {
   return(new Promise((resolve, reject) => {
     connection.end((error) => {
-      if (error !== null && error !== undefined) { reject(error.stack); }
+      if (error !== null && error !== undefined) { return(reject(error)); }
       resolve();
     });
   }));
@@ -34,7 +34,7 @@ export function queryFn(
   return((options: string, values: any[]): Promise<void> => {
     return(new Promise((resolve, reject) => {
       connection.query(options, values, (error) => {
-        if (error !== null && error !== undefined) { reject(error.stack); }
+        if (error !== null && error !== undefined) { return(reject(error)); }
         resolve();
       });
     }));

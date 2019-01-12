@@ -1,8 +1,10 @@
 'use strict';
-const proxyquire = require('proxyquire');
-const assert = require('chai').assert;
+const chai = require('chai');
+const assert = chai.assert;
 const sinon = require('sinon');
-const dbPromises = require('../../lib/dbPromises.js');
+const proxyquire = require('proxyquire');
+
+const dbPromises = require('../../lib/dbPromises');
 
 describe('close', function () {
   const sandbox = sinon.createSandbox();
@@ -10,10 +12,10 @@ describe('close', function () {
   let proxyClose;
 
   beforeEach(function () {
-    doubles = {};
-    doubles.connectionStub = {};
-    doubles.dbPromisesStub = sandbox.stub(dbPromises);
-    proxyClose = proxyquire('../../lib/close.js', {
+    doubles = {
+      dbPromisesStub: sandbox.stub(dbPromises),
+    };
+    proxyClose = proxyquire('../../lib/close', {
       './dbPromises': doubles.dbPromisesStub,
     });
   });
@@ -23,43 +25,76 @@ describe('close', function () {
   });
 
   describe('close()', function () {
-    it('should call end() on the connection and return a Promise that resolves with void', function () {
-      const closeFn = proxyClose.close(doubles.connectionStub);
-      assert.typeOf(closeFn, 'function');
+    describe('default export', function () {
+      it('should be a function', function () {
+        assert.typeOf(proxyClose.default, 'function');
+      });
 
-      doubles.dbPromisesStub.end.returns(Promise.resolve());
+      it('should return a function', function () {
+        assert.typeOf(proxyClose.default(), 'function');
+      });
 
-      const close = closeFn();
-      assert.typeOf(close, 'Promise');
-      return(
-        close.then((data) => {
-          assert.isUndefined(data);
-          assert.isTrue(doubles.dbPromisesStub.end.calledOnce);
-          assert.deepEqual(doubles.dbPromisesStub.end.args[0], [doubles.connectionStub]);
-        }, () => {
-          assert.fail();
-        })
-      );
-    });
+      describe('returned function', function () {
+        let returnedFunction;
 
-    describe('if the connection fails to gracefuly close', function () {
-      it('should return a Promise that rejects with the failed connection closing attempt error message', function () {
-        const closeFn = proxyClose.close(doubles.connectionStub);
-        assert.typeOf(closeFn, 'function');
+        beforeEach(function () {
+          doubles.dbPromisesStub.end.returns(Promise.resolve());
 
-        doubles.dbPromisesStub.end.returns(Promise.reject('dbPromises.end() error message.'));
-  
-        const close = closeFn();
-        assert.typeOf(close, 'Promise');
-        return(
-          close.then(() => {
-            assert.fail();
-          }, (reason) => {
-            assert.strictEqual(reason, 'dbPromises.end() error message.');
-            assert.isTrue(doubles.dbPromisesStub.end.calledOnce);
-            assert.deepEqual(doubles.dbPromisesStub.end.args[0], [doubles.connectionStub]);
-          })
-        );
+          returnedFunction = proxyClose.default();
+        });
+
+        it('should call the end() function of the "dbPromises" module once', function () {
+          return(
+            returnedFunction()
+            .then(function () {
+              assert.isTrue(doubles.dbPromisesStub.end.calledOnce);
+            })
+          );
+        });
+
+        it('should call the end() function of the "dbPromises" module with 1 argument', function () {
+          return(
+            returnedFunction()
+            .then(function () {
+              assert.strictEqual(doubles.dbPromisesStub.end.args[0].length, 1);
+            })
+          );
+        });
+
+        it('should call the end() function of the "dbPromises" module with the argument provided to the default export', function () {
+          const connectionObj = {};
+          return(
+            proxyClose.default(connectionObj)()
+            .then(function () {
+              assert.strictEqual(doubles.dbPromisesStub.end.args[0][0], connectionObj);
+            })
+          );
+        });
+
+        it('should return a promise that resolves with void', function () {
+          return(
+            returnedFunction()
+            .then(function (result) {
+              assert.isUndefined(result);
+            })
+          );
+        });
+
+        describe('if the call to end() of the "dbPromises" module returns a promise that rejects', function () {
+          it('should return a promise that rejects with that Error object', function () {
+            const testError = new Error('end() test error message');
+            doubles.dbPromisesStub.end.returns(Promise.reject(testError));
+            return(
+              returnedFunction()
+              .then(function () {
+                assert.fail();
+              })
+              .catch(function (error) {
+                assert.strictEqual(error, testError);
+              })
+            );
+          });
+        });
       });
     });
   });
