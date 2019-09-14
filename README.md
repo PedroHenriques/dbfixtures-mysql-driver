@@ -69,6 +69,10 @@ describe('fixtures example', function () {
     dbfixtures.setDrivers(mysqlDriver);
   });
 
+  after(async function () {
+    await dbfixtures.closeDrivers();
+  });
+
   beforeEach(async function () {
     await dbfixtures.insertFixtures(fixtures);
   });

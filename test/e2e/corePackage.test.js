@@ -46,6 +46,8 @@ describe('Entry point', function () {
   });
 
   after(function () {
+    dbFixtures.closeDrivers();
+
     new Promise((resolve, reject) => {
       connection.end((error) => {
         if (error) { reject(error); }

@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0] - 2019-09-14
+### Changed
+- Updated NPM dependencies to latest versions
+- Updated E2E test suite with new interface of the main package "dbfixtures"
+- Updated readme with new interface of the main package "dbfixtures" in the usage example
+
+### Removed
+- Deprecated linter configuration option
+
 ## [1.1.0] - 2019-01-12
 ### Added
 - Information about supported NodeJS versions and how to setup a docker container to run the automated tests for this repository to the Readme file
